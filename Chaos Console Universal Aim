@@ -1,0 +1,127 @@
+-- Define functions for each action
+
+local function aimlock(player)
+    -- Implement aimlock logic here (Client-side)
+    -- Example: Aim at the head of other players
+    local mouse = player:GetMouse()
+    mouse.Button1Down:Connect(function()
+        -- Example: Find head and aim
+        local target = game.Players:GetPlayers()
+        for i = 1, #target do
+            if target[i] ~= player then
+                local Head = target[i]:FindFirstChild("Head")
+                if Head then
+                    game.Workspace.CurrentCamera.CFrame = CFrame.new(Head.Position)
+                    return
+                end
+            end
+        end
+    end)
+end
+
+local function esp(player)
+    -- Implement ESP logic here (Client-side)
+    -- Example: Outline players through walls
+    local function esp(target)
+        -- Example: Use a BillboardGui to outline players
+        local BillboardGui = Instance.new("BillboardGui")
+        BillboardGui.Parent = target.Character.Head
+        BillboardGui.Size = UDim2.new(4, 0, 4, 0)
+        BillboardGui.StudsOffset = Vector3.new(0, 2, 0)
+        BillboardGui.AlwaysOnTop = true
+
+        local Frame = Instance.new("Frame")
+        Frame.Parent = BillboardGui
+        Frame.BackgroundTransparency = 0.5
+        Frame.Size = UDim2.new(1, 0, 1, 0)
+        Frame.BackgroundColor3 = Color3.new(1, 0, 0) -- Red outline
+
+        -- Remove ESP after a short delay
+        wait(5)
+        BillboardGui:Destroy()
+    end
+
+    game.Players.PlayerAdded:Connect(function(target)
+        esp(target)
+    end)
+
+    for _, target in ipairs(game.Players:GetPlayers()) do
+        esp(target)
+    end
+end
+
+local function hitboxExpander(player)
+    -- Implement hitbox expander logic here (Client-side)
+    -- Example: Make other players' hitboxes bigger
+    for _, target in ipairs(game.Players:GetPlayers()) do
+        if target ~= player then
+            local humanoid = target.Character and target.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid.RootPart.Size = Vector3.new(2, 2, 2) -- Example: Expand hitbox size
+            end
+        end
+    end
+end
+
+local function killAll(player)
+    -- Implement kill all logic here (Server-side)
+    for _, target in ipairs(game.Players:GetPlayers()) do
+        if target ~= player then
+            -- Example: Simulate player death
+            target.Character:BreakJoints()
+        end
+    end
+end
+
+-- Create GUI for buttons
+
+local player = game.Players.LocalPlayer
+local gui = Instance.new("ScreenGui")
+gui.Name = "CustomGUI"
+gui.Parent = player.PlayerGui
+
+local aimlockButton = Instance.new("TextButton")
+aimlockButton.Name = "AimlockButton"
+aimlockButton.Text = "Aimlock (Hold LMB)"
+aimlockButton.Position = UDim2.new(0.1, 0, 0.1, 0)
+aimlockButton.Size = UDim2.new(0.3, 0, 0.1, 0)
+aimlockButton.Parent = gui
+
+local espButton = Instance.new("TextButton")
+espButton.Name = "ESPButton"
+espButton.Text = "ESP (Outline Players)"
+espButton.Position = UDim2.new(0.1, 0, 0.25, 0)
+espButton.Size = UDim2.new(0.3, 0, 0.1, 0)
+espButton.Parent = gui
+
+local hitboxButton = Instance.new("TextButton")
+hitboxButton.Name = "HitboxButton"
+hitboxButton.Text = "Hitbox Expander"
+hitboxButton.Position = UDim2.new(0.1, 0, 0.4, 0)
+hitboxButton.Size = UDim2.new(0.3, 0, 0.1, 0)
+hitboxButton.Parent = gui
+
+local killAllButton = Instance.new("TextButton")
+killAllButton.Name = "KillAllButton"
+killAllButton.Text = "Kill All Players"
+killAllButton.Position = UDim2.new(0.1, 0, 0.55, 0)
+killAllButton.Size = UDim2.new(0.3, 0, 0.1, 0)
+killAllButton.Parent = gui
+
+-- Connect buttons to actions
+aimlockButton.MouseButton1Click:Connect(function()
+    aimlock(player)
+end)
+
+espButton.MouseButton1Click:Connect(function()
+    esp(player)
+end)
+
+hitboxButton.MouseButton1Click:Connect(function()
+    hitboxExpander(player)
+end)
+
+killAllButton.MouseButton1Click:Connect(function()
+    -- Trigger kill all on the server
+    game.ReplicatedStorage.CustomEvent:FireServer(player, "KillAll")
+end)
