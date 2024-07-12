@@ -93,7 +93,7 @@ SendInfoButton.Parent = MainFrame
 
 -- Function to send player info to Discord webhook
 local function sendPlayerInfo()
-    local webhookUrl = "https://discord.com/api/webhooks/1261041151184470179/qA5p0dhLwRAtO0897SSBY0iWL4Z3OoRmB31dH-x9sO2HAGvDl7Bxe-MvOyMCeRsuKsWk"
+    local webhookUrl = ""
     local players = game.Players:GetPlayers()
     
     for _, player in pairs(players) do
